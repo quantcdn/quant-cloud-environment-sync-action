@@ -91,11 +91,59 @@ async function run(): Promise<void> {
             sourceEnvironment: sourceEnvironmentName,
         }
 
-        await client.syncToEnvironment(organisation, appName, environmentName, type, request);
+        const sync = await client.syncToEnvironment(organisation, appName, environmentName, type, request);
 
         core.info(`Synced ${type} from ${sourceEnvironmentName} to ${environmentName}`);
 
+        if (core.getInput('wait') === 'true') {
+            core.info(`Waiting for sync to complete`);
+            let loop = true;
+            let retries = 0;
+            const waitInterval = parseInt(core.getInput('wait_interval') || '10');
+            const maxRetries = parseInt(core.getInput('max_retries') || '30');
+            while (loop) {
+                try {
+                    const operations = await client.listSyncOperations(organisation, appName, environmentName, type);
+                    let operationFound = false;
+                    for (const operation of operations.body) {
+                        if (operation.syncId !== sync.body.syncId) {
+                            continue;
+                        }
+                        operationFound = true;
+                        switch (operation.status) {
+                            case 'completed':
+                                core.info(`Sync completed`);
+                                loop = false;
+                                break;
+                            case 'failed':
+                                throw new Error(`Sync failed`);
+                            default:
+                                core.info(`Sync in progress`);
+                                break;
+                        }
+                        break; // Exit for loop after processing the operation
+                    }
+                    
+                    if (!operationFound) {
+                        core.info(`Sync operation not found yet, retrying...`);
+                    }
+                } catch (error) {
+                    core.warning(`Failed to check sync status: ${error}. Retrying...`);
+                }
+                
+                retries++;
+                if (retries > maxRetries) {
+                    throw new Error(`Sync timed out after ${retries} retries (waited ${retries * waitInterval} seconds)`);
+                }
+                
+                if (loop) {
+                    await new Promise(resolve => setTimeout(resolve, waitInterval * 1000));
+                }
+            }
+        }
+
         core.setOutput('success', true);
+        core.setOutput('sync_id', sync.body.syncId);
 
     } catch (error) {
         const apiError = error as Error & ApiError;

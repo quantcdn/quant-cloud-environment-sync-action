@@ -23,11 +23,25 @@ inputs:
   source:
     description: 'Name of the source environment'
     required: true
+  wait:
+    description: 'Whether to wait for the sync to complete'
+    required: false
+    default: 'false'
+  wait_interval:
+    description: 'Interval in seconds to wait for the sync to complete'
+    required: false
+    default: '10'
+  max_retries:
+    description: 'Maximum number of retries before timing out'
+    required: false
+    default: '30'
   type:
     description: 'Type of data to sync'
     required: false
     default: 'database'
 outputs:
+  sync_id:
+    description: 'ID of the sync'
   success:
     description: 'Whether the sync was successful'
     value: true
