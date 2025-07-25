@@ -1,4 +1,4 @@
-name: Test Create Environment
+name: Test Environment Sync
 
 on:
   workflow_dispatch:
@@ -9,21 +9,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Create the environment
+      - name: Sync environment data
         uses: ./
-        id: create-environment
+        id: sync-environment
         with:
           api_key: ${{ secrets.QUANT_API_KEY }}
-          environment_name: 'production'
-          app_name: 'clap'
-          organization: 'quant'
-          base_url: 'https://portal.stage.quantcdn.io/api/v3'
-          compose_spec: '{"containers":[{"name":"nginx-container-1","imageReference":{"type":"external","identifier":"nginx:stable-perl"},"essential":true,"portMappings":[{"containerPort":80,"protocol":"tcp"}]},{"name":"mailhog-container-2","imageReference":{"type":"external","identifier":"mailhog/mailhog:latest"},"essential":true,"portMappings":[{"containerPort":8025,"protocol":"tcp"}]}]}'
+          environment_name: 'staging'
+          source: 'production'
+          app_name: 'actions-test'
+          organization: ${{ secrets.QUANT_ORGANIZATION }}
+          type: 'database'
+          base_url: ${{ secrets.QUANT_BASE_URL }}
+          
       - name: Debug Outputs
         run: |
-          echo "Environment Name: ${{ steps.create-environment.outputs.environment_name }}"
+          echo "Sync Success: ${{ steps.sync-environment.outputs.success }}"
