@@ -2,6 +2,9 @@ name: Test Environment Sync
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   test:
