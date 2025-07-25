@@ -32,7 +32,7 @@ jobs:
           api_key: ${{ secrets.QUANT_API_KEY }}
           environment_name: ${{ inputs.environment_name || 'staging' }}
           source: ${{ inputs.source || 'production' }}
-          app_name: 'actions-test'
+          app_name: 'actions'
           organization: ${{ secrets.QUANT_ORGANIZATION }}
           type: ${{ inputs.type || 'filesystem' }}
           base_url: ${{ secrets.QUANT_BASE_URL }}
