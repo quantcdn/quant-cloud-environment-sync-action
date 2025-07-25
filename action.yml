@@ -1,0 +1,36 @@
+name: 'Quant Cloud Environment'
+description: 'Creates or updates an environment in Quant Cloud'
+branding:
+  icon: 'cloud'
+  color: 'blue'
+inputs:
+  api_key:
+    description: 'Quant API key'
+    required: true
+  organization:
+    description: 'Quant organisation ID'
+    required: true
+  app_name:
+    description: 'Name of your application'
+    required: true
+  environment_name:
+    description: 'Name for the environment'
+    required: true
+  base_url:
+    description: 'Quant Cloud API URL'
+    required: false
+    default: 'https://dashboard.quantcdn.io/api/v3'
+  source:
+    description: 'Name of the source environment'
+    required: true
+  type:
+    description: 'Type of data to sync'
+    required: false
+    default: 'database'
+outputs:
+  success:
+    description: 'Whether the sync was successful'
+    value: true
+runs:
+  using: 'node20'
+  main: 'dist/index.js' 
