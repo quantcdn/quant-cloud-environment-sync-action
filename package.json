@@ -1,7 +1,7 @@
 {
-  "name": "quant-cloud-create-application-action",
+  "name": "quant-cloud-environment-sync-action",
   "version": "1.0.0",
-  "description": "GitHub Action for creating a new application in Quant Cloud",
+  "description": "GitHub Action for syncing data between environments in Quant Cloud",
   "main": "dist/index.js",
   "scripts": {
     "build": "ncc build src/index.ts",

@@ -1,5 +1,5 @@
-name: 'Quant Cloud Environment'
-description: 'Creates or updates an environment in Quant Cloud'
+name: 'Quant Cloud Environment Sync'
+description: 'Syncs data between environments in Quant Cloud'
 branding:
   icon: 'cloud'
   color: 'blue'
