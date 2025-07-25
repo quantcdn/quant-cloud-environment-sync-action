@@ -21,7 +21,7 @@ jobs:
           source: 'production'
           app_name: 'actions-test'
           organization: ${{ secrets.QUANT_ORGANIZATION }}
-          type: 'database'
+          type: 'filesystem'
           base_url: ${{ secrets.QUANT_BASE_URL }}
           
       - name: Debug Outputs
