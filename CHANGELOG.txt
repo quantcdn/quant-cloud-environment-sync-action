@@ -1,0 +1,23 @@
+# Changelog
+
+## [2.0.0] - 2025-10-19
+
+### Added
+- Automatic API version normalisation (v2/v3 URLs automatically converted to new API format)
+- Wait functionality with configurable retry intervals and maximum retries
+- Comprehensive error handling and logging
+
+### Changed
+- Uses @quantcdn/quant-client v4.0.0 for improved API compatibility
+- No longer requires explicit v3 API endpoints - automatically handles legacy URL formats
+
+### Technical Details
+- Migrated from legacy v2/v3 API endpoints to unified API structure
+- Backward compatible with existing workflows using v2/v3 base URLs
+- Enhanced error reporting with detailed API error messages
+
+## [1.0.0] - 2025-05-29
+
+### Added
+- Initial release of Quant Cloud Environment Sync Action
+- Support for syncing database and filesystem data between environments

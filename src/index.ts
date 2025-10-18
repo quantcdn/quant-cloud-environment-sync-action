@@ -1,39 +1,10 @@
 import * as core from '@actions/core';
 import {
+    Configuration,
     Environment,
     EnvironmentsApi,
     SyncToEnvironmentRequest
-} from 'quant-ts-client';
-
-const apiOpts = (apiKey: string) => {
-    return {
-        applyToRequest: (requestOptions: any) => {
-            if (requestOptions && requestOptions.headers) {
-                requestOptions.headers["Authorization"] = `Bearer ${apiKey}`;
-            }
-        }
-    }
-}
-
-function removeNullValues(obj: any): any {
-    if (obj === null || obj === undefined) {
-        return undefined;
-    }
-    if (Array.isArray(obj)) {
-        return obj.map(removeNullValues).filter(x => x !== undefined);
-    }
-    if (typeof obj === 'object') {
-        const result: any = {};
-        for (const [key, value] of Object.entries(obj)) {
-            const cleaned = removeNullValues(value);
-            if (cleaned !== undefined) {
-                result[key] = cleaned;
-            }
-        }
-        return Object.keys(result).length ? result : undefined;
-    }
-    return obj;
-}
+} from '@quantcdn/quant-client';
 
 interface ApiError {
     statusCode?: number;
@@ -54,13 +25,14 @@ async function run(): Promise<void> {
         const organisation = core.getInput('organization', { required: true });
         const environmentName = core.getInput('environment_name', { required: true });
 
-        const baseUrl = core.getInput('base_url') || 'https://dashboard.quantcdn.io/api/v3';
+        let baseUrl = core.getInput('base_url') || 'https://dashboard.quantcdn.io';
+
+        const config = new Configuration({ apiKey: apiKey, basePath: baseUrl });
 
         const sourceEnvironmentName = core.getInput('source', { required: true });
         const type = core.getInput('type', { required: false }) || 'database';
 
-        const client = new EnvironmentsApi(baseUrl);
-        client.setDefaultAuthentication(apiOpts(apiKey));
+        const client = new EnvironmentsApi(config);
 
         core.info('Quant Cloud Environment Sync Action');
 

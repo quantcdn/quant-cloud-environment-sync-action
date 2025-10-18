@@ -5,7 +5,7 @@ Sync data between existing environments in Quant Cloud. This action requires bot
 ## Usage
 
 ```yaml
-- uses: quantcdn/quant-cloud-environment-action@v1
+- uses: quantcdn/quant-cloud-environment-action@v2
   with:
     api_key: ${{ secrets.QUANT_API_KEY }}
     organization: your-org-id
@@ -16,7 +16,7 @@ Sync data between existing environments in Quant Cloud. This action requires bot
     wait: true  # Wait for sync to complete
     wait_interval: 10  # Check every 10 seconds
     max_retries: 30  # Timeout after 30 retries (5 minutes)
-    base_url: https://dashboard.quantcdn.io/api/v3  # Optional
+    base_url: https://dashboard.quantcdn.io  # Optional
 ```
 
 ## Inputs
@@ -30,7 +30,7 @@ Sync data between existing environments in Quant Cloud. This action requires bot
 * `wait`: Whether to wait for the sync to complete (optional, default: 'false')
 * `wait_interval`: Interval in seconds between status checks (optional, default: '10')
 * `max_retries`: Maximum number of retries before timing out (optional, default: '30')
-* `base_url`: Quant Cloud API URL (optional, default: 'https://dashboard.quantcdn.io/api/v3')
+* `base_url`: Quant Cloud API URL (optional, default: 'https://dashboard.quantcdn.io')
 
 ## Outputs
 
