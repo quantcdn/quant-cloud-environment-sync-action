@@ -23,11 +23,43 @@ on:
       - main
 
 jobs:
-  test:
+  unit-test:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    services:
+      mock-api:
+        image: ghcr.io/quantcdn/quant-mock-api:4.0.0
+        ports:
+          - 4010:4010
+        options: >-
+          --health-cmd "nc -z 127.0.0.1 4010"
+          --health-interval 10s
+          --health-timeout 5s
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Run unit tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Test action
+        run: npm run test
+  test-action:
+    name: Test the action with a mock API
+    services:
+      mock-api:
+        image: ghcr.io/quantcdn/quant-mock-api:4.0.0
+        ports:
+          - 4010:4010
+        options: >-
+          --health-cmd "nc -z 127.0.0.1 4010"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Sync environment data
         uses: ./
         id: sync-environment
@@ -38,8 +70,7 @@ jobs:
           app_name: 'actions'
           organization: ${{ secrets.QUANT_ORGANIZATION }}
           type: ${{ inputs.type || 'filesystem' }}
-          base_url: ${{ secrets.QUANT_BASE_URL }}
-          
+          base_url: http://localhost:4010
       - name: Debug Outputs
         run: |
           echo "Sync Success: ${{ steps.sync-environment.outputs.success }}"

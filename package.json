@@ -5,7 +5,9 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "ncc build src/index.ts",
-    "test": "jest",
+    "test": "jest --config jest.config.unit.js",
+    "test:integration": "jest",
+    "test:mock": "./scripts/test-with-mock.sh",
     "prepare": "husky"
   },
   "dependencies": {
@@ -13,9 +15,12 @@
     "@quantcdn/quant-client": "^4.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@vercel/ncc": "^0.38.3",
     "husky": "^9.1.7",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
     "typescript": "^5.0.0"
   }
 }

@@ -18,7 +18,7 @@ interface ApiError {
  * 
  * @returns The name of the created environment.
  */
-async function run(): Promise<void> {    
+export async function run(): Promise<void> {    
     try {
         const apiKey = core.getInput('api_key', { required: true });
         const appName = core.getInput('app_name', { required: true });
