@@ -6,7 +6,8 @@
   "scripts": {
     "build": "ncc build src/index.ts",
     "test": "jest --config jest.config.unit.js",
-    "test:integration": "jest",
+    "test:unit": "jest --config jest.config.unit.js",
+    "test:integration": "jest tests/index.test.ts",
     "test:mock": "./scripts/test-with-mock.sh",
     "prepare": "husky"
   },

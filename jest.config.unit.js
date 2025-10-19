@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '.*index\\.test\\.ts$'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
@@ -13,7 +14,6 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   // Mock the quant-client for unit tests
   moduleNameMapper: {
     '^@quantcdn/quant-client$': '<rootDir>/tests/__mocks__/quant-client.ts',
