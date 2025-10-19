@@ -15,7 +15,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   // Mock the quant-client for unit tests
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@quantcdn/quant-client$': '<rootDir>/tests/__mocks__/quant-client.ts',
   },
 };
