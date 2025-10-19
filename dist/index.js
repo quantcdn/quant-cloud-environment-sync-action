@@ -43055,6 +43055,10 @@ async function run() {
         const organisation = core.getInput('organization', { required: true });
         const environmentName = core.getInput('environment_name', { required: true });
         let baseUrl = core.getInput('base_url') || 'https://dashboard.quantcdn.io';
+        if (baseUrl.endsWith('v3') || baseUrl.endsWith('v2')) {
+            // Normalise the base URL to the new API format.
+            baseUrl = baseUrl.replace('/api/v3', '').replace('/api/v2', '');
+        }
         const config = new quant_client_1.Configuration({ apiKey: apiKey, basePath: baseUrl });
         const sourceEnvironmentName = core.getInput('source', { required: true });
         const type = core.getInput('type', { required: false }) || 'database';

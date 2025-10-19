@@ -27,6 +27,11 @@ async function run(): Promise<void> {
 
         let baseUrl = core.getInput('base_url') || 'https://dashboard.quantcdn.io';
 
+        if (baseUrl.endsWith('v3') || baseUrl.endsWith('v2')) {
+            // Normalise the base URL to the new API format.
+            baseUrl = baseUrl.replace('/api/v3', '').replace('/api/v2', '');
+        }
+
         const config = new Configuration({ apiKey: apiKey, basePath: baseUrl });
 
         const sourceEnvironmentName = core.getInput('source', { required: true });
