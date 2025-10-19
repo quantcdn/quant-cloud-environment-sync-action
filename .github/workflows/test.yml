@@ -23,30 +23,9 @@ on:
       - main
 
 jobs:
-  unit-test:
-    name: Run unit tests
+  unit-tests:
+    name: Run unit tests with mock API
     runs-on: ubuntu-latest
-    services:
-      mock-api:
-        image: ghcr.io/quantcdn/quant-mock-api:4.0.0
-        ports:
-          - 4010:4010
-        options: >-
-          --health-cmd "nc -z 127.0.0.1 4010"
-          --health-interval 10s
-          --health-timeout 5s
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm install
-      - name: Run unit tests
-        run: npm test
-      - name: Build
-        run: npm run build
-      - name: Test action
-        run: npm run test
-  test-action:
-    name: Test the action with a mock API
     services:
       mock-api:
         image: ghcr.io/quantcdn/quant-mock-api:4.0.0
@@ -57,20 +36,48 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Sync environment data
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm install
+      - name: Run unit tests
+        run: npm test
+
+  gha-action-test:
+    name: Test GitHub Action with mock API
+    runs-on: ubuntu-latest
+    services:
+      mock-api:
+        image: ghcr.io/quantcdn/quant-mock-api:4.0.0
+        ports:
+          - 4010:4010
+        options: >-
+          --health-cmd "nc -z 127.0.0.1 4010"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test action with mock API
         uses: ./
         id: sync-environment
         with:
           api_key: test-api-key
-          environment_name: staging
-          source: production
+          environment_name: test-target
+          source: test-source
           app_name: test-app
           organization: test-org
           type: database
           base_url: http://localhost:4010
+          wait: true
+          max_retries: 3
+          retry_interval: 2
       - name: Debug Outputs
         run: |
           echo "Sync Success: ${{ steps.sync-environment.outputs.success }}"
+          echo "Sync ID: ${{ steps.sync-environment.outputs.sync_id }}"

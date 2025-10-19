@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Clean up any existing container
+echo "Cleaning up existing containers..."
+docker stop quant-mock-api 2>/dev/null || true
+docker rm quant-mock-api 2>/dev/null || true
+
 # Start the mock API container
 echo "Starting mock API container..."
 docker run -d --name quant-mock-api -p 4010:4010 ghcr.io/quantcdn/quant-mock-api:4.0.0
@@ -8,7 +13,7 @@ docker run -d --name quant-mock-api -p 4010:4010 ghcr.io/quantcdn/quant-mock-api
 echo "Waiting for mock API to be ready..."
 timeout=30
 counter=0
-while ! curl -s http://localhost:4010/health > /dev/null 2>&1; do
+while ! curl -s http://localhost:4010/api/v3/organisations/test-org/applications > /dev/null 2>&1; do
   if [ $counter -eq $timeout ]; then
     echo "Mock API failed to start within $timeout seconds"
     docker logs quant-mock-api

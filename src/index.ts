@@ -83,7 +83,7 @@ export async function run(): Promise<void> {
                     const operations = await client.listSyncOperations(organisation, appName, environmentName, type);
                     let operationFound = false;
                     for (const operation of operations.body) {
-                        if (operation.syncId !== sync.body.syncId) {
+                        if (operation.syncId !== sync.syncId) {
                             continue;
                         }
                         operationFound = true;
@@ -120,7 +120,7 @@ export async function run(): Promise<void> {
         }
 
         core.setOutput('success', true);
-        core.setOutput('sync_id', sync.body.syncId);
+        core.setOutput('sync_id', sync.syncId);
 
     } catch (error) {
         const apiError = error as Error & ApiError;
