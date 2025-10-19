@@ -70,6 +70,7 @@ export async function run(): Promise<void> {
 
         const sync = await client.syncToEnvironment(organisation, appName, environmentName, type, request);
 
+        core.setOutput('sync_id', sync.data.syncId);
         core.info(`Synced ${type} from ${sourceEnvironmentName} to ${environmentName}`);
 
         if (core.getInput('wait') === 'true') {
@@ -82,8 +83,9 @@ export async function run(): Promise<void> {
                 try {
                     const operations = await client.listSyncOperations(organisation, appName, environmentName, type);
                     let operationFound = false;
-                    for (const operation of operations.body) {
-                        if (operation.syncId !== sync.syncId) {
+                    const operationsList = operations.data;
+                    for (const operation of operationsList) {
+                        if (operation.syncId !== sync.data.syncId) {
                             continue;
                         }
                         operationFound = true;

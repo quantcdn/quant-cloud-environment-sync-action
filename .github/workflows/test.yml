@@ -76,7 +76,7 @@ jobs:
           base_url: http://localhost:4010
           wait: true
           max_retries: 3
-          retry_interval: 2
+          wait_interval: 2
       - name: Debug Outputs
         run: |
           echo "Sync Success: ${{ steps.sync-environment.outputs.success }}"
