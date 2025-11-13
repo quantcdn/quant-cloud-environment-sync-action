@@ -45,6 +45,8 @@ outputs:
   success:
     description: 'Whether the sync was successful'
     value: true
+  skipped:
+    description: 'Whether the sync was skipped (e.g. database not configured)'
 runs:
   using: 'node20'
   main: 'dist/index.js' 

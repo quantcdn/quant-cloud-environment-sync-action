@@ -91,9 +91,25 @@ async function run(): Promise<void> {
             sourceEnvironment: sourceEnvironmentName,
         }
 
-        const sync = await client.syncToEnvironment(organisation, appName, environmentName, type, request);
-
-        core.info(`Synced ${type} from ${sourceEnvironmentName} to ${environmentName}`);
+        let sync;
+        try {
+            sync = await client.syncToEnvironment(organisation, appName, environmentName, type, request);
+            core.info(`Synced ${type} from ${sourceEnvironmentName} to ${environmentName}`);
+        } catch (error) {
+            const apiError = error as Error & ApiError;
+            if (apiError.statusCode === 400) {
+                const message = apiError.body?.message || 'Bad Request';
+                const details = (apiError.body as any)?.details;
+                core.warning(`Sync operation not available: ${message}`);
+                if (details) {
+                    core.warning(`Details: ${details}`);
+                }
+                core.setOutput('success', false);
+                core.setOutput('skipped', true);
+                return;
+            }
+            throw error;
+        }
 
         if (core.getInput('wait') === 'true') {
             core.info(`Waiting for sync to complete`);
