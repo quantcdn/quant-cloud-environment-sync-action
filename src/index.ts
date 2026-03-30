@@ -1,66 +1,41 @@
 import * as core from '@actions/core';
 import {
-    Environment,
     EnvironmentsApi,
-    SyncToEnvironmentRequest
-} from 'quant-ts-client';
-
-const apiOpts = (apiKey: string) => {
-    return {
-        applyToRequest: (requestOptions: any) => {
-            if (requestOptions && requestOptions.headers) {
-                requestOptions.headers["Authorization"] = `Bearer ${apiKey}`;
-            }
-        }
-    }
-}
-
-function removeNullValues(obj: any): any {
-    if (obj === null || obj === undefined) {
-        return undefined;
-    }
-    if (Array.isArray(obj)) {
-        return obj.map(removeNullValues).filter(x => x !== undefined);
-    }
-    if (typeof obj === 'object') {
-        const result: any = {};
-        for (const [key, value] of Object.entries(obj)) {
-            const cleaned = removeNullValues(value);
-            if (cleaned !== undefined) {
-                result[key] = cleaned;
-            }
-        }
-        return Object.keys(result).length ? result : undefined;
-    }
-    return obj;
-}
+    SyncToEnvironmentRequest,
+    SyncToEnvironmentTypeEnum,
+    ListSyncOperationsTypeEnum,
+    Configuration
+} from '@quantcdn/quant-client';
 
 interface ApiError {
-    statusCode?: number;
-    body?: {
-        message?: string;
-    }
+    response?: {
+        status?: number;
+        data?: {
+            message?: string;
+            details?: string;
+        };
+    };
+    message?: string;
 }
 
-/**
- * This action creates a new environment in Quant Cloud.
- * 
- * @returns The name of the created environment.
- */
-async function run(): Promise<void> {    
+async function run(): Promise<void> {
     try {
         const apiKey = core.getInput('api_key', { required: true });
         const appName = core.getInput('app_name', { required: true });
         const organisation = core.getInput('organization', { required: true });
         const environmentName = core.getInput('environment_name', { required: true });
 
-        const baseUrl = core.getInput('base_url') || 'https://dashboard.quantcdn.io/api/v3';
+        let baseUrl = core.getInput('base_url') || 'https://dashboard.quantcdn.io';
+        baseUrl = baseUrl.replace(/\/api\/v3\/?$/, '');
 
         const sourceEnvironmentName = core.getInput('source', { required: true });
         const type = core.getInput('type', { required: false }) || 'database';
 
-        const client = new EnvironmentsApi(baseUrl);
-        client.setDefaultAuthentication(apiOpts(apiKey));
+        const config = new Configuration({
+            basePath: baseUrl,
+            accessToken: apiKey
+        });
+        const client = new EnvironmentsApi(config);
 
         core.info('Quant Cloud Environment Sync Action');
 
@@ -68,18 +43,15 @@ async function run(): Promise<void> {
             throw new Error(`Invalid type: ${type}`);
         }
 
-        let environment: Environment;
-        let sourceEnvironment: Environment;
-
         try {
-            environment = (await client.getEnvironment(organisation, appName, environmentName)).body;
+            await client.getEnvironment(organisation, appName, environmentName);
             core.info(`Environment ${environmentName} exists`);
         } catch (error) {
             throw new Error(`Environment ${environmentName} does not exist`);
         }
 
         try {
-            sourceEnvironment = (await client.getEnvironment(organisation, appName, sourceEnvironmentName)).body;
+            await client.getEnvironment(organisation, appName, sourceEnvironmentName);
             core.info(`Source environment ${sourceEnvironmentName} exists`);
         } catch (error) {
             throw new Error(`Source environment ${sourceEnvironmentName} does not exist`);
@@ -89,17 +61,17 @@ async function run(): Promise<void> {
 
         const request: SyncToEnvironmentRequest = {
             sourceEnvironment: sourceEnvironmentName,
-        }
+        };
 
         let sync;
         try {
-            sync = await client.syncToEnvironment(organisation, appName, environmentName, type, request);
+            sync = await client.syncToEnvironment(organisation, appName, environmentName, type as SyncToEnvironmentTypeEnum, request);
             core.info(`Synced ${type} from ${sourceEnvironmentName} to ${environmentName}`);
         } catch (error) {
             const apiError = error as Error & ApiError;
-            if (apiError.statusCode === 400) {
-                const message = apiError.body?.message || 'Bad Request';
-                const details = (apiError.body as any)?.details;
+            if (apiError.response?.status === 400) {
+                const message = apiError.response?.data?.message || 'Bad Request';
+                const details = apiError.response?.data?.details;
                 core.warning(`Sync operation not available: ${message}`);
                 if (details) {
                     core.warning(`Details: ${details}`);
@@ -119,10 +91,10 @@ async function run(): Promise<void> {
             const maxRetries = parseInt(core.getInput('max_retries') || '30');
             while (loop) {
                 try {
-                    const operations = await client.listSyncOperations(organisation, appName, environmentName, type);
+                    const operations = await client.listSyncOperations(organisation, appName, environmentName, type as ListSyncOperationsTypeEnum);
                     let operationFound = false;
-                    for (const operation of operations.body) {
-                        if (operation.syncId !== sync.body.syncId) {
+                    for (const operation of operations.data) {
+                        if (operation.syncId !== sync.data.syncId) {
                             continue;
                         }
                         operationFound = true;
@@ -137,21 +109,24 @@ async function run(): Promise<void> {
                                 core.info(`Sync in progress`);
                                 break;
                         }
-                        break; // Exit for loop after processing the operation
+                        break;
                     }
-                    
+
                     if (!operationFound) {
                         core.info(`Sync operation not found yet, retrying...`);
                     }
                 } catch (error) {
+                    if (error instanceof Error && error.message === 'Sync failed') {
+                        throw error;
+                    }
                     core.warning(`Failed to check sync status: ${error}. Retrying...`);
                 }
-                
+
                 retries++;
                 if (retries > maxRetries) {
                     throw new Error(`Sync timed out after ${retries} retries (waited ${retries * waitInterval} seconds)`);
                 }
-                
+
                 if (loop) {
                     await new Promise(resolve => setTimeout(resolve, waitInterval * 1000));
                 }
@@ -159,14 +134,14 @@ async function run(): Promise<void> {
         }
 
         core.setOutput('success', true);
-        core.setOutput('sync_id', sync.body.syncId);
+        core.setOutput('sync_id', sync.data.syncId);
 
     } catch (error) {
         const apiError = error as Error & ApiError;
-        core.setFailed(apiError.body?.message != null ? apiError.body?.message : error instanceof Error ? error.message : 'Unknown error');
+        core.setFailed(apiError.response?.data?.message ?? (error instanceof Error ? error.message : 'Unknown error'));
     }
 
     return;
 }
 
-run(); 
+run();
