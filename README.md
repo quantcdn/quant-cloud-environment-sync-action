@@ -30,12 +30,18 @@ Sync data between existing environments in Quant Cloud. This action requires bot
 * `wait`: Whether to wait for the sync to complete (optional, default: 'false')
 * `wait_interval`: Interval in seconds between status checks (optional, default: '10')
 * `max_retries`: Maximum number of retries before timing out (optional, default: '30')
+* `fail_on_skip`: Fail the step when the API refuses the sync with HTTP 400, for example when the database is not configured (optional, default: 'false'). When 'false', the step passes, emits a warning annotation with the API message, and sets `skipped` to `true`.
 * `base_url`: Quant Cloud API URL (optional, default: 'https://dashboard.quantcdn.io/api/v3')
 
 ## Outputs
 
 * `success`: Whether the sync was successful (boolean)
 * `sync_id`: ID of the sync operation
+* `skipped`: `true` when the API refused the sync (HTTP 400). `success` is `false` in this case.
+
+## Unreleased
+
+* Fix: a refused sync (HTTP 400) now emits a clear `Sync skipped` warning with the API message. New input `fail_on_skip` fails the step instead of passing silently.
 
 ## Wait Functionality
 

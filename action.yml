@@ -39,6 +39,10 @@ inputs:
     description: 'Type of data to sync'
     required: false
     default: 'database'
+  fail_on_skip:
+    description: 'Fail the step when the API refuses the sync with HTTP 400 (for example the database is not configured). When false, the step passes with a warning and skipped=true.'
+    required: false
+    default: 'false'
 outputs:
   sync_id:
     description: 'ID of the sync'
@@ -46,7 +50,7 @@ outputs:
     description: 'Whether the sync was successful'
     value: true
   skipped:
-    description: 'Whether the sync was skipped (e.g. database not configured)'
+    description: 'Whether the sync was skipped because the API refused it (HTTP 400, e.g. database not configured). A warning annotation explains why.'
 runs:
   using: 'node24'
   main: 'dist/index.js' 

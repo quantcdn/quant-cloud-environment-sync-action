@@ -48265,9 +48265,13 @@ async function run() {
             if (apiError.response?.status === 400) {
                 const message = apiError.response?.data?.message || 'Bad Request';
                 const details = apiError.response?.data?.details;
-                core.warning(`Sync operation not available: ${message}`);
-                if (details) {
-                    core.warning(`Details: ${details}`);
+                const reason = details ? `${message} (${details})` : message;
+                core.warning(`Sync skipped: the API refused the request with HTTP 400. ${reason}`);
+                if (core.getInput('fail_on_skip') === 'true') {
+                    core.setOutput('success', false);
+                    core.setOutput('skipped', true);
+                    core.setFailed(`Sync skipped and fail_on_skip is true: ${reason}`);
+                    return;
                 }
                 core.setOutput('success', false);
                 core.setOutput('skipped', true);
