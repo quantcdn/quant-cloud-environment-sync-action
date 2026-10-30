@@ -48,9 +48,17 @@ Sync data between existing environments in Quant Cloud. This action requires bot
 When `wait` is set to `true`, the action will monitor the sync operation status and wait for completion:
 
 - Checks sync status every `wait_interval` seconds
-- Times out after `max_retries` attempts 
+- Times out after `max_retries` attempts
 - Provides detailed logging of sync progress
 - Handles API errors gracefully with retry logic
 - Default timeout: 30 retries × 10 seconds = 5 minutes
 
 The action will succeed when the sync completes successfully, or fail if the sync fails or times out.
+## Runner security requirement
+
+This action uses the runner's embedded Node 24, which must be 24.22.1 or later
+for CVE-2026-111497. Update self-hosted runner containers/binaries to apply the
+fix. A `setup-node` workflow step changes the job shell runtime, not the Node
+binary GitHub uses to execute actions. A pre-run check rejects vulnerable
+runner versions before action API calls. Use the current maintained action tag
+or its immutable release SHA; historical pinned releases do not update themselves.

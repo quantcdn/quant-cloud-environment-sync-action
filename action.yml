@@ -53,4 +53,5 @@ outputs:
     description: 'Whether the sync was skipped because the API refused it (HTTP 400, e.g. database not configured). A warning annotation explains why.'
 runs:
   using: 'node24'
+  pre: 'runtime-check.cjs'
   main: 'dist/index.js' 
