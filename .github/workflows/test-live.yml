@@ -1,0 +1,42 @@
+name: Live disposable environment sync test
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "base_url: explicitly supplied disposable fixture"
+        required: true
+        type: string
+      organization:
+        description: "organization: explicitly supplied disposable fixture"
+        required: true
+        type: string
+      application:
+        description: "application: explicitly supplied disposable fixture"
+        required: true
+        type: string
+      environment:
+        description: "environment: explicitly supplied disposable fixture"
+        required: true
+        type: string
+      source:
+        description: "source: explicitly supplied disposable fixture"
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: ./
+        with:
+          api_key: ${{ secrets.QUANT_API_KEY }}
+          base_url: ${{ inputs.base_url }}
+          organization: ${{ inputs.organization }}
+          app_name: ${{ inputs.application }}
+          environment_name: ${{ inputs.environment }}
+          source: ${{ inputs.source }}
+          type: filesystem
+          wait: "true"
+          fail_on_skip: "true"
